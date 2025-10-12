@@ -1,3 +1,9 @@
+// For this mini assignment, I modified the harmonic armature sketch so that the user is able to manually create their own
+// composition lines. I used a similar mechanism as the point tracking sketch in order to add each dot to the canvas.
+
+// Instructions: click once to add a dot, click another time to create the second dot and connect them with a line. 
+// Highlight the line by clicking on it, and delete by pressing "delete" key. Press space bar to toggle between hiding and 
+// showing the lines.
 
 let img;
 let input;
