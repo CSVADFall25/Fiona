@@ -75,7 +75,7 @@ function drawTooltip() {
     if (c.mouseOver(mouseX, mouseY)) {
       let lines = [
         `${c.name} (${c.year})`,
-        `⭐ ${c.rating}`,
+        `Rating: ${c.rating}`,
         `${c.rewatch ? 'Rewatch' : 'First time'}`,
         `${c.tags}`
       ];
