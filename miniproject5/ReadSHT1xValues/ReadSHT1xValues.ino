@@ -13,12 +13,16 @@
 // Specify data and clock connections and instantiate SHT1x object
 #define dataPin  10
 #define clockPin 11
+#define buttonPin 7
 SHT1x sht1x(dataPin, clockPin);
+
+int button_pressed; 
 
 void setup()
 {
    Serial.begin(9600); // Open serial connection to report values to host
    Serial.println("Starting up");
+   pinMode(buttonPin, INPUT);
 }
 
 void loop()
@@ -32,13 +36,19 @@ void loop()
   temp_f = sht1x.readTemperatureF();
   humidity = sht1x.readHumidity();
 
+  button_pressed = digitalRead(buttonPin);
+
   // Print the values to the serial port
-  Serial.print(temp_c, DEC);
-  //Serial.print("C / ");
+  //Serial.print("Temperature: ");
+  Serial.print(temp_c);
+  Serial.print(",");
+  Serial.print(humidity);
+  Serial.print(",");
+  Serial.println(button_pressed);
   //Serial.print(temp_f, DEC);
   //Serial.print("F. Humidity: ");
   //Serial.print(humidity);
   //Serial.println("%");
 
-  delay(2000);
+  delay(500);
 }
