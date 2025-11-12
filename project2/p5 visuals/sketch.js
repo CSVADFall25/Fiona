@@ -4,9 +4,12 @@ let points = [];
 let centroids = [];
 let genreSelect;
 let selectedGenre= "All";
+let mainfont;
 
 function preload() {
   // make sure your CSVs are in the same folder as the sketch! 
+  mainfont=loadFont('Courier New Bold.ttf'); 
+  // here I'm using a custom font since I didn't like the default... just copied Courier New Bold to the folder
   summaryTable = loadTable('summary_stats.csv', 'csv', 'header');   
   k_meansTable = loadTable('df_colors.csv', 'csv', 'header');
   console.log(k_meansTable.columns);
@@ -19,6 +22,7 @@ function setup() {
   createCanvas(windowWidth, windowHeight);
   textAlign(CENTER, CENTER);
   textSize(16);
+  textFont(mainfont)
 
   // quickly parse summary stats
   if (summaryTable.getRowCount() > 0) {
@@ -110,7 +114,9 @@ function keyPressed() {
 function drawSummary() {
   fill(0);
   textSize(18);
+  textStyle(BOLD); 
   text("Movie Summary Stats", width / 2, 40);
+  textStyle(NORMAL);
   textSize(14);
   textAlign(LEFT, TOP);
 
