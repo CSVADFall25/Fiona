@@ -69,12 +69,13 @@ for (let r = 0; r < k_meansTable.getRowCount(); r++) {
 
   let genreStr = k_meansTable.get(r, "GenreNames");
   let genres = parseList(genreStr).map(g => g.toLowerCase());
-  
+  let title = k_meansTable.get(r, "Name") || "(unknown title)";
   points.push({
     x: map(pca1, minX, maxX, 100, width - 100),
     y: map(pca2, minY, maxY, height - 100, 100),
     cluster,
-    genres
+    genres,
+    title
   });
 }
 console.log("summary rows:", summaryTable.getRowCount());
@@ -97,7 +98,7 @@ function draw() {
   }
 }
 
-// resizes if the window itself changes! i've never tried this before 
+// resizes if the window itself changes! i've never tried this before. pretty cool
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
 }
@@ -146,7 +147,7 @@ function drawClusters() {
   textSize(14);
   text("(press SPACE to return to summary)", width / 2, height - 40);
 
-  //plot points 
+  // plot points 
 
   for (let p of points) {
     let show =
@@ -158,6 +159,32 @@ function drawClusters() {
     fill(c);
     noStroke();
     ellipse(p.x, p.y, 8);
+  }
+
+
+  // hover detection - used chat for this basic function 
+  let hoverRadius = 10;
+  let hovered = null;
+
+  for (let p of points) {
+    let show =
+      selectedGenre === "All" ||
+      p.genres.some(g => g === selectedGenre.toLowerCase());
+    if (!show) continue;
+
+    let d = dist(mouseX, mouseY, p.x, p.y);
+    if (d < hoverRadius) {
+      hovered = p;
+      break;
+    }
+  }
+
+  if (hovered) {
+    fill(255);
+    noStroke();
+    textAlign(LEFT, BOTTOM);
+    textSize(13);
+    text(hovered.title, mouseX + 10, mouseY - 5);
   }
 }
 
