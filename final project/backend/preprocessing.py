@@ -17,6 +17,12 @@ from dotenv import load_dotenv
 import ones
 load_dotenv()
 
+# If you're running this locally, you can comment out the installation line if you already have the library installed
+!pip install scrapxd
+
+from scrapxd.client import Scrapxd
+
+
 API_KEY = os.getenv("TMDB_API_KEY")
 
 from google.colab import drive
