@@ -153,7 +153,7 @@ def summary_stats(diary):
 
 # Testing code - commented out for now
 #dff= return_diary(instance)
-#diary2= (run_k_means(dff,'f00b535c6cd0d85ad4ee31a06a4e8554')) # hooray! it's working 
+#diary2= (run_k_means(dff,'APIKEYHERE')) # hooray! it's working 
 # #print(diary2.head())
 # unique = diary2['LanguageName'].unique()
 # print(diary2.iloc[92])
