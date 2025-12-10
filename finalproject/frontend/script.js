@@ -13,15 +13,15 @@ document.addEventListener("DOMContentLoaded", () => {
   testConnection();
 });
 
-// Test connection function
+// Test connection function - checks if can connect to backend 
 async function testConnection() {
   try {
     const response = await fetch(`${API_BASE_URL}/health`);
     if (response.ok) {
-      console.log("✓ Backend is connected");
+      console.log("Backend is connected");
     }
   } catch (error) {
-    console.error("✗ Cannot connect to backend:", error);
+    console.error("Cannot connect to backend:", error);
     showError("Warning: Cannot connect to backend server. Make sure it's running on port 5000.");
   }
 }
@@ -31,6 +31,26 @@ searchBtn.addEventListener("click", handleSearch);
 usernameInput.addEventListener("keypress", (e) => {
   if (e.key === "Enter") handleSearch();
 });
+
+// toggle elements (in html) that move between summary view and viz view 
+const viewSummaryBtn = document.getElementById('view-summary');
+const viewVizBtn = document.getElementById('view-viz');
+const canvasWrap = document.getElementById('canvas-wrap');
+
+function setView(mode) {
+  // mode: 0 = summary (DOM), 1 = viz (canvas)
+  window.dispatchEvent(new CustomEvent('setMode', { detail: { mode } }));
+  if (mode === 0) {
+    resultsContainer.style.display = 'block';
+    if (canvasWrap) canvasWrap.style.display = 'none';
+  } else {
+    resultsContainer.style.display = 'none';
+    if (canvasWrap) canvasWrap.style.display = 'block';
+  }
+}
+
+viewSummaryBtn?.addEventListener('click', () => setView(0));
+viewVizBtn?.addEventListener('click', () => setView(1));
 
 // Main search handler
 async function handleSearch() {
@@ -63,9 +83,22 @@ async function handleSearch() {
     }
 
     const data = await response.json();
-
-    // Display results
+    // Display results (DOM summary)
     displayResults(data, username);
+
+    // Make data available to visuals in sketch.js
+    try {
+      // store on window for sketch to pick up
+      window.DIARY_DATA = data;
+      // dispatch an event so sketch.js can listen and update visuals immediately
+      window.dispatchEvent(new CustomEvent('diaryData', { detail: data }));
+      // call optional callback if defined by sketch
+      if (typeof window.onDiaryData === 'function') {
+        window.onDiaryData(data);
+      }
+    } catch (e) {
+      console.warn('Could not dispatch diaryData event', e);
+    }
   } catch (error) {
     console.error("Error fetching data:", error);
     showError(`Failed to fetch data: ${error.message}`);
@@ -74,14 +107,14 @@ async function handleSearch() {
   }
 }
 
-// Display results on page
+// display summary stats on page
 function displayResults(data, username) {
   const { diary, summary } = data;
 
   let html = `<div class="results">`;
   html += `<h2>Results for: ${username}</h2>`;
 
-  // Display Summary Stats
+  // Display Stats 
   if (summary) {
     html += `<div class="summary">
       <h3>Summary Statistics</h3>
@@ -99,56 +132,6 @@ function displayResults(data, username) {
 
     html += `</div>`;
   }
-
-  // Display Diary Entries as Table
-  if (diary && diary.length > 0) {
-    html += `<div class="diary-entries">
-      <h3>Movie Diary (${diary.length} entries)</h3>
-      <table class="diary-table">
-        <thead>
-          <tr>
-            <th>Movie Title</th>
-            <th>Rating</th>
-            <th>Date</th>
-            <th>Genre</th>
-            <th>Language</th>
-            <th>Runtime</th>
-          </tr>
-        </thead>
-        <tbody>`;
-
-    // Limit to first 50 entries for performance
-    diary.slice(0, 50).forEach((entry) => {
-      const title = entry.name || "Unknown";
-      const rating = entry["actions.rating"] || "N/A";
-      const date = entry["date.month"] ? `${entry["date.month"]}/2024` : "N/A";
-      const genres = Array.isArray(entry.GenreNames)
-        ? entry.GenreNames.join(", ")
-        : "N/A";
-      const language = entry.LanguageName || "N/A";
-      const runtime = entry.Runtime ? `${entry.Runtime} min` : "N/A";
-
-      html += `<tr>
-        <td>${escapeHtml(title)}</td>
-        <td>${rating}</td>
-        <td>${date}</td>
-        <td>${genres}</td>
-        <td>${language}</td>
-        <td>${runtime}</td>
-      </tr>`;
-    });
-
-    if (diary.length > 50) {
-      html += `<tr><td colspan="6" style="text-align: center; font-style: italic;">Showing 50 of ${diary.length} entries</td></tr>`;
-    }
-
-    html += `</tbody>
-      </table>
-    </div>`;
-  } else {
-    html += `<p>No diary entries found.</p>`;
-  }
-
   html += `</div>`;
   resultsContainer.innerHTML = html;
 }

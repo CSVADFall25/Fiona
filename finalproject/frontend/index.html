@@ -21,8 +21,16 @@
       <div id="loading" style="display: none;">Loading...</div>
       <div id="error" style="display: none; color: red;"></div>
       <div id="results-container"></div>
+      <!-- View toggle buttons -->
+      <div id="view-toggle" style="margin-top:12px;">
+        <button id="view-summary" class="toggle-btn">Summary</button>
+        <button id="view-viz" class="toggle-btn">K‑Means</button>
+      </div>
+      <!-- Container where p5 will create its canvas (hidden by default) -->
+      <div id="canvas-wrap" style="display:none; width:100%; height:600px;"></div>
     </div>
   </main>
   <script src="script.js"></script>
+  <script src="sketch.js"></script> 
 </body>
 </html>

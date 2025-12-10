@@ -7,7 +7,6 @@ import requests
 from io import BytesIO
 import time, unicodedata
 
-
 from letterboxdpy.user import User
 
 instance = 'fi011235' # test instance 
@@ -107,13 +106,20 @@ def run_k_means(diary, api_key):
     df_colors["Palette Cluster"] = kmeans.fit_predict(X)
 
 
-    cluster_centers = kmeans.cluster_centers_.reshape(k, 3, 3).astype(int)
+    # cluster centers in palette-space (k x 9 -> reshape to k x 3 x 3)
+    cluster_centers_rgb = kmeans.cluster_centers_.reshape(k, 3, 3).astype(int)
 
     pca = PCA(n_components=2, random_state=42)
     X_2D = pca.fit_transform(X)
 
     df_colors["PCA1"] = X_2D[:, 0]
-    df_colors["PCA2"] = X_2D[:, 1] 
+    df_colors["PCA2"] = X_2D[:, 1]
+
+    # compute centroid positions in PCA space for visualization
+    try:
+        centers_2d = pca.transform(kmeans.cluster_centers_)
+    except Exception:
+        centers_2d = np.zeros((k, 2))
 
     # now create new colns with full genre (rather than just ID), non-abbreviated language
     df_colors["GenreNames"] = df_colors["Genre"].apply(
@@ -124,7 +130,13 @@ def run_k_means(diary, api_key):
 
     df_cleaner = df_colors.drop(columns=['slug', 'release', 'actions.rewatched', 'date.year', 'date.day', 'page.no', 'Genre', 'Language', 'actions.liked'])
 # removing slug because letterboxd specific and don't need, removing date.year and date.day because only calculating monthly ave, removing page.no because not needed, removing actions.rewatched and actions.liked because not needed for now
-    return(df_cleaner)
+    # prepare centroid info to return alongside dataframe
+    centers_info = {
+        "rgb": cluster_centers_rgb.tolist(),  # k x 3 x 3
+        "pca": centers_2d.tolist()            # k x 2
+    }
+
+    return df_cleaner, centers_info
 
 def summary_stats(diary):
     summary = {}
@@ -178,7 +190,7 @@ def convert_to_serializable(obj):
 
 def full_bundle(username, api_key):
     diary = return_diary(username)
-    full_diary = run_k_means(diary, api_key)
+    full_diary, centers_info = run_k_means(diary, api_key)
     summary = summary_stats(full_diary)
     
     # Convert DataFrame to dict and replace NaN with None
@@ -187,7 +199,8 @@ def full_bundle(username, api_key):
     # Serialize everything properly for JSON
     result = {
         "diary": convert_to_serializable(diary_dict),
-        "summary": convert_to_serializable(summary)
+        "summary": convert_to_serializable(summary),
+        "cluster_centers": convert_to_serializable(centers_info)
     }
     
     return result
