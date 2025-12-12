@@ -71,6 +71,8 @@ def run_k_means(diary, api_key):
        if not resp["results"]:
           resp = requests.get("https://api.themoviedb.org/3/search/tv", params=params).json()
     
+       poster_path = None  # Initialize to None to handle cases where no results are found
+       
        if resp["results"]:
         movie_id = resp["results"][0]["id"]
         details = requests.get(
